@@ -15,7 +15,7 @@
         .historico-container { height: 100px; padding: 5px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: #080a0d; overflow-y: auto; align-content: start; }
         .vela-item { padding: 6px 0; display: flex; align-items: center; justify-content: center; border-radius: 4px; font-weight: bold; font-size: 16px; background: #1e2329; border: 1px solid rgba(255,255,255,0.1); }
         .status-area { flex: 1; background: radial-gradient(circle at bottom, #1a0a2e 0%, #000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; border-top: 2px solid #222; position: relative; overflow: hidden; }
-        .balao { width: 85%; padding: 3px; border-radius: 12px; text-align: center; font-weight: 900; font-size: 15px; text-transform: uppercase; background: rgba(15, 15, 15, 0.9); border: 2px solid #333; margin-bottom: 10px; z-index: 25; }
+        .balao { width: 85%; padding: 4px; border-radius: 12px; text-align: center; font-weight: 900; font-size: 18px; text-transform: uppercase; background: rgba(15, 15, 15, 0.9); border: 2px solid #333; margin-bottom: 10px; z-index: 25; color: #fff;}
         .game-stage { width: 100%; height: 180px; position: relative; }
         #svg-grafico { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; overflow: visible; }
         #curva-line { fill: none; stroke: var(--red); stroke-width: 5; stroke-linecap: round; transition: d 1.5s cubic-bezier(0.1, 0, 0.3, 1), stroke 0.3s, opacity 0.4s; }
@@ -29,8 +29,8 @@
         .display { background: #000; color: #f0b90b; padding: 5px; text-align: right; font-size: 26px; border-radius: 6px; margin-bottom: 10px; font-family: monospace; border: 1px solid #444; }
         .btn-grid { display: grid; grid-template-columns: 3fr 1.2fr; gap: 8px; }
         .num-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .btn { background: #2b2f36; border: none; color: #fff; padding: 6px 0; font-size: 17px; font-weight: bold; border-radius: 8px; }
-        .btn-clear-all { background: #444; color: #fff; font-size: 14px; text-transform: uppercase; margin-bottom: 8px; height: 60px; line-height: 1.2; border: none; border-radius: 8px; }
+        .btn { background: #2b2f36; border: none; color: #fff; padding: 10px 0; font-size: 24px; font-weight: bold; border-radius: 8px; }
+        .btn-clear-all { background: #444; color: #fff; font-size: 17px; text-transform: uppercase; margin-bottom: 8px; height: 60px; line-height: 1.2; border: none; border-radius: 8px; }
         .btn-ok { background: var(--green); color: #000; font-weight: 900; flex: 1; border: none; border-radius: 8px; font-size: 22px; }
     </style>
 </head>
@@ -92,6 +92,16 @@
         } 
     }
 
+    // FUNÇÃO LÓGICA SENSATA: Analisa se o gráfico está muito perigoso para Gale
+    function eSeguroFazerGale() {
+        if (velas.length < 3) return true;
+        // Pega as 3 últimas velas reais que saíram
+        const ultimas = velas.slice(0, 3);
+        // Se as 3 últimas forem velas azuis (abaixo de 1.50x), o risco é extremo
+        const sequenciaAzul = ultimas.filter(v => v < 1.50).length;
+        return sequenciaAzul < 3; // Retorna falso se houver 3 azuis seguidas
+    }
+
     function animar(estado, corDesejada = 'var(--red)') {
         const box = document.getElementById('rocket-box');
         const line = document.getElementById('curva-line');
@@ -139,12 +149,12 @@
     function analisarEstrategia() {
         if(velas.length < 1) return;
 
-        // REGRA 1: Vela de quebra extrema (1.10x ou menos)
+        // REGRA 1: Vela de quebra extrema
         if(velas[0] <= 1.10) {
             emSinal = true; alvo = 1.50;
             animar('voo'); setBalao("red", "🎯 ENTRAR: 1.50x");
         }
-        // REGRA 2: Sequência de duas velas azuis (abaixo de 2x)
+        // REGRA 2: Sequência de duas velas azuis
         else if(velas.length >= 2 && velas[0] < 2 && velas[1] < 2) {
             emSinal = true; alvo = 2.00;
             animar('voo'); setBalao("red", "🚀 ENTRAR: 2.00x");
@@ -165,9 +175,17 @@
                 setBalao("green", "✅ GREEN " + alvo.toFixed(2) + "x");
             } else {
                 gale++;
-                if(gale > 2) { 
+                
+                // VERIFICAÇÃO SENSATA ANTES DO GALE
+                if (!eSeguroFazerGale()) {
+                    s.r++; // Aborta e conta Red para preservar banca
+                    animar('finish', 'var(--red)'); 
+                    emSinal = false; gale = 0;
+                    setBalao("red", "⚠️ ABORTAR: RISCO DE VELAS BAIXAS");
+                } 
+                else if(gale > 1) { // Limite de 1 Gale para segurança
                     s.r++; animar('finish', 'var(--red)'); emSinal = false; gale = 0; 
-                    setBalao("red", "❌ RED"); 
+                    setBalao("red", "❌ RED: LIMITE GALE"); 
                 } else { 
                     animar('voo', 'var(--orange)'); 
                     setBalao("orange", "⚠️ GALE " + gale + ": " + alvo.toFixed(2) + "x"); 
@@ -180,9 +198,11 @@
     }
 
     function setBalao(cor, txt) {
-        document.getElementById('status').style.color = `var(--${cor === 'text' ? 'orange' : cor})`;
-        document.getElementById('status').innerHTML = txt;
-    }
+    const elemento = document.getElementById('status');
+    elemento.style.color = "#ffffff"; // Força o texto a ser sempre branco
+    elemento.innerHTML = txt;
+}
+
 
     function render() {
         document.getElementById('hist').innerHTML = velas.map(x => `<div class="vela-item" style="color:${x>=2?'#9b59b6':'#3498db'}">${x.toFixed(2)}</div>`).join('');
