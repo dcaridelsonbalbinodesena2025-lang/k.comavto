@@ -8,7 +8,7 @@
         :root {
             --bg: #0b0e11; --card: #181a20; --red: #d91d3a; --orange: #f39c12; --green: #0ecb81;
         }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 92vh; }
         
         .header { display: grid; grid-template-columns: repeat(4, 1fr); padding: 5px; background: var(--card); border-bottom: 1px solid #333; text-align: center; }
         .score-num { font-size: 15px; font-weight: bold; display: block; }
@@ -29,7 +29,7 @@
         #curva-line { fill: none; stroke: var(--red); stroke-width: 5; stroke-linecap: round; transition: d 1.5s cubic-bezier(0.1, 0, 0.3, 1), stroke 0.3s, opacity 0.4s; }
         #curva-fill { fill: url(#grad); opacity: 0; transition: d 1.5s cubic-bezier(0.1, 0, 0.3, 1), opacity 0.4s; }
         
-        #rocket-box { position: absolute; width: 45px; height: 45px; left: 10px; bottom: 10px; z-index: 30; display: flex; align-items: center; justify-content: center; font-size: 30px; transition: all 1.5s cubic-bezier(0.1, 0, 0.3, 1); }
+        #rocket-box { position: absolute; width: 45px; height: 45px; left: 10px; bottom: 10px; z-index: 30; display: flex; align-items: center; justify-content: center; font-size: 40px; transition: all 1.5s cubic-bezier(0.1, 0, 0.3, 1); }
         .rocket-anim { animation: tremor 0.1s infinite alternate; }
         @keyframes tremor { from { transform: translate(0,0); } to { transform: translate(1px, 1px); } }
         
